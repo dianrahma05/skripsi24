@@ -141,7 +141,6 @@ class Preprocessing:
             # Pemilihan Atribut yang akan digunakan
             selected_columns = [
                 "Id_Penduduk",
-                "Nama_KRT",
                 "Pekerjaan",
                 "Usia",
                 "Status_Perkawinan",
