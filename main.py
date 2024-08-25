@@ -141,6 +141,8 @@ class Preprocessing:
             # Pemilihan Atribut yang akan digunakan
             selected_columns = [
                 "Id_Penduduk",
+                "Nama_KRT",
+                "Alamat",
                 "Pekerjaan",
                 "Usia",
                 "Status_Perkawinan",
@@ -302,7 +304,7 @@ class Prediction:
                 conditional_probabilities = st.session_state.conditional_probabilities
                 numerical_stats = st.session_state.numerical_stats
 
-                categorical_cols = ['Nama KRT', 'Alamat', 'Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan']
+                categorical_cols = ['Nama_KRT', 'Alamat', 'Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan']
                 numerical_cols = ['Usia', 'Tanggungan']
 
                 # Fungsi untuk menghitung probabilitas untuk setiap kelas berdasarkan data uji
