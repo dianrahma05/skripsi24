@@ -336,7 +336,7 @@ class Prediction:
                 y_pred = np.array(predictions)
 
                 # Menampilkan hasil prediksi
-                st.subheader("Hasil Prediksi")
+                st.subheader("Hasil Prediksi Status Kelayakan")
                 test_df['Prediksi Status Kelayakan'] = y_pred
                 st.write(test_df[['Prediksi Status Kelayakan']])  # Tidak menyertakan 'Status_Kelayakan'
 
@@ -361,7 +361,7 @@ class Prediction:
             else:
                 st.warning("Data training belum tersedia. Silakan lakukan pelatihan model terlebih dahulu di bagian Data Mining & Visualisasi.")
         else:
-            st.info("Silakan upload data uji untuk melakukan prediksi.")
+            st.info("Silakan upload Data BPNT untuk melakukan prediksi.")
 
 
 if __name__ == "__main__":
