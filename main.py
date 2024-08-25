@@ -304,7 +304,7 @@ class Prediction:
                 conditional_probabilities = st.session_state.conditional_probabilities
                 numerical_stats = st.session_state.numerical_stats
 
-                categorical_cols = ['Nama_KRT', 'Alamat', 'Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan']
+                categorical_cols = ['Id_Penduduk','Nama_KRT', 'Alamat', 'Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan']
                 numerical_cols = ['Usia', 'Tanggungan']
 
                 # Fungsi untuk menghitung probabilitas untuk setiap kelas berdasarkan data uji
@@ -340,7 +340,7 @@ class Prediction:
                 # Menampilkan hasil prediksi
                 st.subheader("Hasil Prediksi Status Kelayakan")
                 test_df['Prediksi Status Kelayakan'] = y_pred
-                st.write(test_df[['Nama_KRT', 'Alamat', 'Prediksi Status Kelayakan']])
+                st.write(test_df[['Id_Penduduk','Nama_KRT', 'Alamat', 'Prediksi Status Kelayakan']])
 
                 # Evaluasi model (hanya jika kolom 'Status_Kelayakan' ada di data uji)
                 if 'Status_Kelayakan' in test_df.columns:
