@@ -9,7 +9,6 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 from streamlit_option_menu import option_menu
-import io
 
 # Nama Website
 st.set_page_config(page_title="SISTEM KLASIFIKASI KELAYAKAN BANTUAN SEMBAKO")
@@ -118,30 +117,8 @@ class Data:
                 "demografis": self.file_names["demografis"],
                 "rastrada": self.file_names["rastrada"],
             }
-
-            # Button to download combined data as Excel
-            if st.button("Download Data sebagai Excel"):
-                self.download_excel(df_bpnt, df_demografis, df_rastrada)
-
         else:
             st.warning("Silahkan upload data : Data BPNT, Data Demografis, dan Data Rastrada")
-
-    def download_excel(self, df_bpnt, df_demografis, df_rastrada):
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df_bpnt.to_excel(writer, sheet_name='Data BPNT', index=False)
-            df_demografis.to_excel(writer, sheet_name='Data Demografis', index=False)
-            df_rastrada.to_excel(writer, sheet_name='Data Rastrada', index=False)
-        writer.save()
-        processed_data = output.getvalue()
-
-        st.download_button(
-            label="Download Data sebagai Excel",
-            data=processed_data,
-            file_name="combined_data.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-
 
 class Preprocessing:
 
@@ -229,64 +206,167 @@ class DataMining:
             st.subheader("Data Training (Data Latih)")
             train_df = st.session_state.train_df
             st.write(train_df)
-        else:
-            st.warning("Data belum siap, silahkan lakukan Preprocessing terlebih dahulu.")
 
+            # Menghitung probabilitas prior (kelas)
+            frekuensi_kelas = train_df['Status_Kelayakan'].value_counts()
+            total_data = len(train_df)
+            prior_probabilities = frekuensi_kelas / total_data
+
+            st.subheader("Probabilitas Prior (Kelas)")
+            st.write(f"Probabilitas Layak: {prior_probabilities['Layak']:.3f}")
+            st.write(f"Probabilitas Tidak Layak: {prior_probabilities['Tidak Layak']:.3f}")
+
+            # Definisikan kolom kategorikal
+            categorical_cols = ['Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan']
+            available_categorical_cols = [col for col in categorical_cols if col in train_df.columns]
+
+            # Menghitung probabilitas kondisional untuk setiap atribut kategorikal
+            conditional_probabilities = {}
+            for col in available_categorical_cols:
+                conditional_probabilities[col] = train_df.groupby(['Status_Kelayakan', col]).size().unstack().fillna(0)
+                # Menormalkan probabilitas kondisional
+                conditional_probabilities[col] = conditional_probabilities[col].div(frekuensi_kelas, axis=0)
+
+            # Tampilkan hasil probabilitas kondisional dengan 3 angka di belakang koma
+            st.subheader("Probabilitas Kondisional (Atribut Kategorikal)")
+            for col in available_categorical_cols:
+                st.write(f"Probabilitas Kondisional untuk {col}:")
+                # Menggunakan format string untuk menampilkan dengan 3 angka di belakang koma
+                formatted_probabilities = conditional_probabilities[col].applymap(lambda x: f"{x:.3f}")
+                st.write(formatted_probabilities)
+
+            # Menghitung probabilitas kondisional untuk atribut kontinu (Usia dan Tanggungan)
+            numerical_cols = ['Usia', 'Tanggungan']
+            numerical_stats = {}
+            for col in numerical_cols:
+                numerical_stats[col] = train_df.groupby('Status_Kelayakan').agg(
+                    mean=(col, 'mean'),
+                    variance=(col, lambda x: np.var(x, ddof=1)),
+                    stddev=(col, lambda x: np.std(x, ddof=1))
+                )
+
+            st.subheader("Statistik (Mean, Variance, StdDev) untuk Atribut Kontinu")
+            for col in numerical_cols:
+                st.write(f"Statistik untuk {col}:")
+                st.write(numerical_stats[col])
+
+            # Menghitung probabilitas kondisional menggunakan distribusi Gaussian
+            def gaussian_probability(x, mean, stddev):
+                exponent = np.exp(-((x - mean) ** 2) / (2 * stddev ** 2))
+                return (1 / (stddev * np.sqrt(2 * np.pi))) * exponent
+
+            st.subheader("Probabilitas Kondisional (Atribut Kontinu) Menggunakan Distribusi Gaussian")
+            for col in numerical_cols:
+                st.write(f"Probabilitas Kondisional untuk {col}:")
+                for status in ['Layak', 'Tidak Layak']:
+                    mean = numerical_stats[col].loc[status, 'mean']
+                    stddev = numerical_stats[col].loc[status, 'stddev']
+                    conditional_probs = train_df[col].apply(lambda x: gaussian_probability(x, mean, stddev))
+                    
+                    # Membuat dataframe untuk menampilkan nilai usia/tanggungan beserta probabilitasnya
+                    result_df = pd.DataFrame({
+                        col: train_df[col],
+                        'Probabilitas': conditional_probs.apply(lambda x: f"{x:.3f}")
+                    })
+
+                    st.write(f"Probabilitas untuk '{col}' dengan status '{status}':")
+                    st.write(result_df)
+
+            # Simpan probabilitas ke dalam session_state
+            st.session_state.prior_probabilities = prior_probabilities
+            st.session_state.conditional_probabilities = conditional_probabilities
+            st.session_state.numerical_stats = numerical_stats
 
 class Prediction:
+    def __init__(self):
+        pass
+
+    def gaussian_probability(self, x, mean, stddev):
+        exponent = np.exp(-((x - mean) ** 2 / (2 * stddev ** 2)))
+        return (1 / (stddev * np.sqrt(2 * np.pi))) * exponent
 
     def menu_prediction(self):
-        st.header("Prediksi Status Kelayakan Penerima Bantuan")
-        if "test_df" not in st.session_state:
-            st.warning("Data untuk prediksi belum tersedia. Silakan lakukan Preprocessing terlebih dahulu.")
-            return
+        st.header("Prediksi Status Kelayakan Masyarakat")
+        
+        # Menambahkan opsi untuk mengunggah data uji
+        uploaded_test_file = st.file_uploader("Upload Data BPNT", type=["xlsx"])
 
-        train_df = st.session_state.train_df
-        test_df = st.session_state.test_df
+        if uploaded_test_file is not None:
+            test_df = pd.read_excel(uploaded_test_file)
+            st.subheader("Data BPNT")
+            st.write(test_df)
+            
+            if "train_df" in st.session_state:
+                train_df = st.session_state.train_df
 
-        st.subheader("Data Testing (Data Uji)")
-        st.write(test_df)
+                # Mengambil probabilitas prior dan probabilitas kondisional yang sudah dihitung
+                prior_probabilities = st.session_state.prior_probabilities
+                conditional_probabilities = st.session_state.conditional_probabilities
+                numerical_stats = st.session_state.numerical_stats
 
-        # Prediksi dengan Gaussian Naive Bayes
-        st.subheader("Prediksi dengan Gaussian Naive Bayes")
-        try:
-            le = LabelEncoder()
-            X_train = train_df.drop(columns=["Status_Kelayakan"])
-            y_train = le.fit_transform(train_df["Status_Kelayakan"])
+                categorical_cols = ['Nama_KRT', 'Alamat', 'Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan']
+                numerical_cols = ['Usia', 'Tanggungan']
 
-            model = GaussianNB()
-            model.fit(X_train, y_train)
+                # Fungsi untuk menghitung probabilitas untuk setiap kelas berdasarkan data uji
+                def calculate_class_probabilities(row):
+                    class_probabilities = {}
+                    for status in prior_probabilities.index:
+                        # Mulai dengan probabilitas prior
+                        class_probabilities[status] = prior_probabilities[status]
 
-            # Prediksi pada data uji
-            X_test = test_df.drop(columns=["Status_Kelayakan"], errors="ignore")
-            y_test = test_df.get("Status_Kelayakan", None)
-            predictions = model.predict(X_test)
+                        # Kalikan dengan probabilitas kondisional untuk setiap atribut kategorikal
+                        for col in categorical_cols:
+                            if col in row:
+                                class_probabilities[status] *= conditional_probabilities[col].get(row[col], {}).get(status, 0)
 
-            if y_test is not None:
-                y_test = le.transform(y_test)
-                st.subheader("Hasil Prediksi")
-                st.write(predictions)
+                        # Kalikan dengan probabilitas kondisional untuk setiap atribut kontinu menggunakan Gaussian
+                        for col in numerical_cols:
+                            mean = numerical_stats[col].loc[status, 'mean']
+                            stddev = numerical_stats[col].loc[status, 'stddev']
+                            class_probabilities[status] *= self.gaussian_probability(row[col], mean, stddev)
 
-                # Confusion Matrix
-                st.subheader("Confusion Matrix")
-                cm = confusion_matrix(y_test, predictions)
-                fig, ax = plt.subplots()
-                sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
-                ax.set_xlabel("Predicted")
-                ax.set_ylabel("Actual")
-                st.pyplot(fig)
+                    return class_probabilities
 
-                # Evaluation Metrics
-                st.subheader("Evaluation Metrics")
-                st.write(f"Accuracy: {accuracy_score(y_test, predictions):.2f}")
-                st.text(classification_report(y_test, predictions, target_names=le.classes_))
+                # Melakukan prediksi untuk setiap baris di data uji
+                predictions = []
+                for index, row in test_df.iterrows():
+                    class_probabilities = calculate_class_probabilities(row)
+                    # Ambil kelas dengan probabilitas tertinggi
+                    best_class = max(class_probabilities, key=class_probabilities.get)
+                    predictions.append(best_class)
+
+                y_pred = np.array(predictions)
+
+                # Menampilkan hasil prediksi
+                st.subheader("Hasil Prediksi Status Kelayakan")
+                test_df['Prediksi Status Kelayakan'] = y_pred
+                st.write(test_df[['Prediksi Status Kelayakan']])  # Tidak menyertakan 'Status_Kelayakan'
+
+                # Evaluasi model (hanya jika kolom 'Status_Kelayakan' ada di data uji)
+                if 'Status_Kelayakan' in test_df.columns:
+                    y_test = test_df['Status_Kelayakan'].values
+                    st.write(test_df[['Nama_KRT', 'Alamat', 'Prediksi Status Kelayakan']])
+                    st.subheader("Evaluasi Model")
+                    
+                    # Menampilkan Confusion Matrix sebagai gambar
+                    st.write("Confusion Matrix:")
+                    cm = confusion_matrix(y_test, y_pred)
+                    fig, ax = plt.subplots()
+                    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+                    ax.set_xlabel('Predicted Labels')
+                    ax.set_ylabel('True Labels')
+                    st.pyplot(fig)
+                    
+                    # Menampilkan metrik lainnya
+                    st.write("Accuracy Score:", accuracy_score(y_test, y_pred))
+                    st.write("Classification Report:")
+                    st.write(classification_report(y_test, y_pred))
             else:
-                st.subheader("Prediksi Status Kelayakan Penerima Bantuan")
-                st.write(predictions)
-        except Exception as e:
-            st.error(f"Error during prediction: {e}")
+                st.warning("Data training belum tersedia. Silakan lakukan pelatihan model terlebih dahulu di bagian Data Mining & Visualisasi.")
+        else:
+            st.info("Silakan upload Data BPNT untuk melakukan prediksi.")
 
 
 if __name__ == "__main__":
-    app = MainClass()
-    app.run()
+    main = MainClass()
+    main.run()
