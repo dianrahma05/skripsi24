@@ -284,14 +284,14 @@ class Prediction:
         return (1 / (stddev * np.sqrt(2 * np.pi))) * exponent
 
     def menu_prediction(self):
-        st.header("Prediksi Status Kelayakan")
+        st.header("Prediksi Status Kelayakan Masyarakat")
         
         # Menambahkan opsi untuk mengunggah data uji
-        uploaded_test_file = st.file_uploader("Upload Data Uji", type=["xlsx"])
+        uploaded_test_file = st.file_uploader("Upload Data BPNT", type=["xlsx"])
 
         if uploaded_test_file is not None:
             test_df = pd.read_excel(uploaded_test_file)
-            st.subheader("Data Testing (Data Uji)")
+            st.subheader("Data BPNT")
             st.write(test_df)
             
             if "train_df" in st.session_state:
