@@ -340,12 +340,11 @@ class Prediction:
                 # Menampilkan hasil prediksi
                 st.subheader("Hasil Prediksi Status Kelayakan")
                 test_df['Prediksi Status Kelayakan'] = y_pred
-                st.write(test_df[['Prediksi Status Kelayakan']])  # Tidak menyertakan 'Status_Kelayakan'
+                st.write(test_df[['Nama_KRT', 'Alamat', 'Prediksi Status Kelayakan']])
 
                 # Evaluasi model (hanya jika kolom 'Status_Kelayakan' ada di data uji)
                 if 'Status_Kelayakan' in test_df.columns:
                     y_test = test_df['Status_Kelayakan'].values
-                    st.write(test_df[['Nama_KRT', 'Alamat', 'Prediksi Status Kelayakan']])
                     st.subheader("Evaluasi Model")
                     
                     # Menampilkan Confusion Matrix sebagai gambar
