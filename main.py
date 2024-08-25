@@ -353,16 +353,18 @@ class Prediction:
                 layak_count = sum(y_pred == "Layak")
                 tidak_layak_count = sum(y_pred == "Tidak Layak")
                 st.subheader("Jumlah Masyarakat Berdasarkan Status Kelayakan")
-                st.write(f"Jumlah Masyarakat yang Layak Menerima Bantuan: {str(layak_count)}")
-                st.write(f"Jumlah Masyarakat yang Tidak Layak Menerima Bantuan: {str(tidak_layak_count)}")
-
+                st.write(f"Jumlah Masyarakat yang Layak Menerima Bantuan: {layak_count}")
+                st.write(f"Jumlah Masyarakat yang Tidak Layak Menerima Bantuan: {tidak_layak_count}")
 
                 # Menampilkan alamat yang paling banyak layak menerima bantuan
                 st.subheader("Alamat dengan Penerima Bantuan Layak Terbanyak")
-                alamat_terbanyak = test_df[test_df['Prediksi Status Kelayakan'] == 'Layak']['Alamat'].value_counts().idxmax()
-                jumlah_terbanyak = test_df[test_df['Prediksi Status Kelayakan'] == 'Layak']['Alamat'].value_counts().max()
-                st.write(f"Alamat: {str(alamat_terbanyak)}")
-                st.write(f"Jumlah Penerima Bantuan Layak: {str(jumlah_terbanyak)}")
+                if 'Alamat' in test_df.columns:
+                    alamat_terbanyak = test_df[test_df['Prediksi Status Kelayakan'] == 'Layak']['Alamat'].value_counts().idxmax()
+                    jumlah_terbanyak = test_df[test_df['Prediksi Status Kelayakan'] == 'Layak']['Alamat'].value_counts().max()
+                    st.write(f"Alamat: {alamat_terbanyak}")
+                    st.write(f"Jumlah Penerima Bantuan Layak: {jumlah_terbanyak}")
+                else:
+                    st.warning("Kolom 'Alamat' tidak ditemukan dalam data uji.")
 
                 # Evaluasi model (hanya jika kolom 'Status_Kelayakan' ada di data uji)
                 if 'Status_Kelayakan' in test_df.columns:
@@ -386,7 +388,6 @@ class Prediction:
                 st.warning("Data training belum tersedia. Silakan lakukan pelatihan model terlebih dahulu di bagian Data Mining & Visualisasi.")
         else:
             st.info("Silakan upload Data BPNT untuk melakukan prediksi.")
-
 
 if __name__ == "__main__":
     main = MainClass()
