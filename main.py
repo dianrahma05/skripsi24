@@ -302,7 +302,7 @@ class Prediction:
                 conditional_probabilities = st.session_state.conditional_probabilities
                 numerical_stats = st.session_state.numerical_stats
 
-                categorical_cols = ['Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan']
+                categorical_cols = ['Nama KRT', 'Alamat', 'Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan']
                 numerical_cols = ['Usia', 'Tanggungan']
 
                 # Fungsi untuk menghitung probabilitas untuk setiap kelas berdasarkan data uji
