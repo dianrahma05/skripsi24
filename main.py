@@ -307,6 +307,13 @@ class Prediction:
                 categorical_cols = ['Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan']
                 numerical_cols = ['Usia', 'Tanggungan']
 
+                # Mengonversi kolom numerik ke tipe data float
+                for col in numerical_cols:
+                    test_df[col] = pd.to_numeric(test_df[col], errors='coerce')
+
+                # Mengisi nilai NaN dengan mean dari kolom tersebut
+                test_df = test_df.fillna(test_df.mean())
+
                 # Fungsi untuk menghitung probabilitas untuk setiap kelas berdasarkan data uji
                 def calculate_class_probabilities(row):
                     class_probabilities = {}
