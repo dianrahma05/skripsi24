@@ -338,7 +338,7 @@ class Prediction:
                 y_pred = np.array(predictions)
 
                 # Menampilkan hasil prediksi
-                st.subheader("Hasil Prediksi Status Kelayakan Masyarakat Penerima Bantuan Sembako")
+                st.subheader("Hasil Prediksi Status Kelayakan Masyarakat Penerima Bantuan Sembako di Kelurahan Cibeureum")
                 test_df['Prediksi Status Kelayakan'] = y_pred
                 st.write(test_df[['Nama_KRT', 'Alamat', 'Prediksi Status Kelayakan']])
 
