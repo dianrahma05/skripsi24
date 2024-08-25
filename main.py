@@ -342,7 +342,7 @@ class Prediction:
 
                 # Evaluasi model (hanya jika kolom 'Status_Kelayakan' ada di data uji)
                 if 'Status_Kelayakan' in test_df.columns:
-                    y_test = test_df['Status_Kelayakan'].values
+                    y_test = test_df['Nama KRT', 'Alamat', 'Pekerjaan', 'Status_Perkawinan', 'Status_Bangunan', 'Pendapatan', 'Kondisi_Dinding', 'Kesehatan', 'Status_Kelayakan'].values
                     st.subheader("Evaluasi Model")
                     
                     # Menampilkan Confusion Matrix sebagai gambar
