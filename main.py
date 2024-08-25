@@ -361,8 +361,8 @@ class Prediction:
                 st.subheader("Alamat dengan Penerima Bantuan Layak Terbanyak")
                 alamat_terbanyak = test_df[test_df['Prediksi Status Kelayakan'] == 'Layak']['Alamat'].value_counts().idxmax()
                 jumlah_terbanyak = test_df[test_df['Prediksi Status Kelayakan'] == 'Layak']['Alamat'].value_counts().max()
-                st.write(f"Alamat: {alamat_terbanyak}")
-                st.write(f"Jumlah Penerima Bantuan Layak: {jumlah_terbanyak}")
+                st.write(f"Alamat: {str(alamat_terbanyak)}")
+                st.write(f"Jumlah Penerima Bantuan Layak: {str(jumlah_terbanyak)}")
 
                 # Evaluasi model (hanya jika kolom 'Status_Kelayakan' ada di data uji)
                 if 'Status_Kelayakan' in test_df.columns:
