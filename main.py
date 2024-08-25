@@ -286,7 +286,7 @@ class Prediction:
         return (1 / (stddev * np.sqrt(2 * np.pi))) * exponent
 
     def menu_prediction(self):
-        st.header("Prediksi Status Kelayakan Masyarakat")
+        st.header("Prediksi Status Kelayakan Masyarakat Penerima Bantuan Sembako")
         
         # Menambahkan opsi untuk mengunggah data uji
         uploaded_test_file = st.file_uploader("Upload Data BPNT", type=["xlsx"])
@@ -338,7 +338,7 @@ class Prediction:
                 y_pred = np.array(predictions)
 
                 # Menampilkan hasil prediksi
-                st.subheader("Hasil Prediksi Status Kelayakan Masyarakat Penerima Bantuan Sembako di Kelurahan Cibeureum")
+                st.subheader("Hasil Prediksi Status Kelayakan Masyarakat Penerima Bantuan Sembako")
                 test_df['Prediksi Status Kelayakan'] = y_pred
                 st.write(test_df[['Nama_KRT', 'Alamat', 'Prediksi Status Kelayakan']])
 
