@@ -353,8 +353,9 @@ class Prediction:
                 layak_count = sum(y_pred == "Layak")
                 tidak_layak_count = sum(y_pred == "Tidak Layak")
                 st.subheader("Jumlah Masyarakat Berdasarkan Status Kelayakan")
-                st.write(f"Jumlah Masyarakat yang Layak Menerima Bantuan: {layak_count}")
-                st.write(f"Jumlah Masyarakat yang Tidak Layak Menerima Bantuan: {tidak_layak_count}")
+                st.write(f"Jumlah Masyarakat yang Layak Menerima Bantuan: {str(layak_count)}")
+                st.write(f"Jumlah Masyarakat yang Tidak Layak Menerima Bantuan: {str(tidak_layak_count)}")
+
 
                 # Menampilkan alamat yang paling banyak layak menerima bantuan
                 st.subheader("Alamat dengan Penerima Bantuan Layak Terbanyak")
