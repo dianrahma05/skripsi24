@@ -342,12 +342,24 @@ class Prediction:
                 test_df['Prediksi Status Kelayakan'] = y_pred
                 st.write(test_df[['Nama_KRT', 'Alamat', 'Prediksi Status Kelayakan']])
 
-                # Menampilkan alamat yang paling banyak layak menerima bantuan
-                st.subheader("Alamat dengan Penerima Bantuan Layak Terbanyak")
-                alamat_terbanyak = test_df[test_df['Prediksi Status Kelayakan'] == 'Layak']['Alamat'].value_counts().idxmax()
-                jumlah_terbanyak = test_df[test_df['Prediksi Status Kelayakan'] == 'Layak']['Alamat'].value_counts().max()
-                st.write(f"Alamat: {alamat_terbanyak}")
-                st.write(f"Jumlah Penerima Bantuan Layak: {jumlah_terbanyak}")
+                 # Menghitung jumlah masyarakat yang layak dan tidak layak
+                layak_count = sum(y_pred == "Layak")
+                tidak_layak_count = sum(y_pred == "Tidak Layak")
+                st.subheader("Jumlah Masyarakat Berdasarkan Status Kelayakan")
+                st.write(f"Jumlah Masyarakat yang Layak Menerima Bantuan: {layak_count}")
+                st.write(f"Jumlah Masyarakat yang Tidak Layak Menerima Bantuan: {tidak_layak_count}")
+
+                # Menentukan alamat yang paling banyak layak menerima bantuan
+                if 'Alamat' in test_df.columns:
+                    most_common_address = (
+                        test_df[test_df['Prediksi Status Kelayakan'] == 'Layak']['Alamat']
+                        .mode()
+                        .values[0]
+                    )
+                    st.subheader("Alamat dengan Jumlah Penerima Layak Terbanyak")
+                    st.write(f"Alamat yang paling banyak layak menerima bantuan: {most_common_address}")
+                else:
+                    st.warning("Kolom 'Alamat' tidak ditemukan dalam data uji.")
 
                 # Evaluasi model (hanya jika kolom 'Status_Kelayakan' ada di data uji)
                 if 'Status_Kelayakan' in test_df.columns:
